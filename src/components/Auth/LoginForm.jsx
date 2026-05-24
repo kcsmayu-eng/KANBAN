@@ -16,10 +16,19 @@ export default function LoginForm() {
 
     try {
       if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({ email, password })
+        // Email is optional for signup
+        const emailToUse = email.trim() || `user_${Date.now()}@anonymous.local`
+        
+        const { data, error } = await supabase.auth.signUp({ 
+          email: emailToUse, 
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`
+          }
+        })
         if (error) throw error
 
-        // Insert profile
+        // Insert profile - this should work now with the fixed RLS policy
         if (data.user) {
           console.log('Creating profile for user:', data.user.id, 'with role:', role)
           const { data: profileData, error: profileError } = await supabase
@@ -34,7 +43,15 @@ export default function LoginForm() {
         }
         toast.success('Account created! You can now log in.')
         setIsSignUp(false)
+        setEmail('')
+        setPassword('')
+        setFullName('')
       } else {
+        if (!email.trim()) {
+          toast.error('Email is required for login')
+          setLoading(false)
+          return
+        }
         const { error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
         toast.success('Logged in!')
@@ -69,10 +86,10 @@ export default function LoginForm() {
 
       <input
         type="email"
-        placeholder="Email"
+        placeholder={isSignUp ? "Email (optional)" : "Email"}
         value={email}
         onChange={e => setEmail(e.target.value)}
-        required
+        required={!isSignUp}
       />
       <input
         type="password"

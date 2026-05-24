@@ -85,8 +85,9 @@ alter table public.project_members enable row level security;
 alter table public.work_catalog    enable row level security;
 alter table public.tasks           enable row level security;
 
--- Profiles: anyone can read; only owner can update own profile
+-- Profiles: anyone can read; only owner can update/insert own profile
 create policy "profiles_select" on public.profiles for select using (true);
+create policy "profiles_insert" on public.profiles for insert with check (auth.uid() = id);
 create policy "profiles_update" on public.profiles for update using (auth.uid() = id);
 
 -- Projects: visible to members and managers
