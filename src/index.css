@@ -179,22 +179,48 @@ textarea { resize: vertical; }
 .project-name { font-weight: 600; font-size: 15px; }
 .project-desc { color: var(--text-muted); font-size: 13px; }
 
+.manager-section {
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 32px;
+}
+
+.manager-section h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
 .new-project-form {
   display: flex;
   gap: 10px;
   margin-top: 8px;
 }
-.new-project-form input { flex: 1; }
+.new-project-form input { 
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+}
+.new-project-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
 .new-project-form button {
   background: var(--primary);
   color: white;
   border-radius: var(--radius);
-  padding: 8px 16px;
+  padding: 10px 16px;
   white-space: nowrap;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
 }
 .new-project-form button:hover { background: var(--primary-h); }
-
-.empty-state { color: var(--text-muted); margin-bottom: 16px; font-style: italic; }
 
 .loading-text { color: var(--text-muted); }
 

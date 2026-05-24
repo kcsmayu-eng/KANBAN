@@ -10,12 +10,21 @@ export default function ProjectSelector({ onSelect }) {
   const [newName, setNewName] = useState('')
 
   async function createProject() {
-    if (!newName.trim()) return
-    const { error } = await supabase
-      .from('projects')
-      .insert({ name: newName.trim(), manager_id: profile.id })
-    if (error) toast.error(error.message)
-    else { setNewName(''); refresh(); toast.success('Project created!') }
+    if (!newName.trim()) {
+      toast.error('Project name is required')
+      return
+    }
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .insert({ name: newName.trim(), manager_id: profile.id })
+      if (error) throw error
+      setNewName('')
+      refresh()
+      toast.success('Project created!')
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
   if (loading) return <p className="loading-text">Loading projects…</p>
@@ -38,14 +47,17 @@ export default function ProjectSelector({ onSelect }) {
       </div>
 
       {isManager && (
-        <div className="new-project-form">
-          <input
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            placeholder="New project name"
-            onKeyDown={e => e.key === 'Enter' && createProject()}
-          />
-          <button onClick={createProject}>+ Add Project</button>
+        <div className="manager-section">
+          <h3>Create New Project</h3>
+          <div className="new-project-form">
+            <input
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              placeholder="Enter project name"
+              onKeyDown={e => e.key === 'Enter' && createProject()}
+            />
+            <button onClick={createProject}>+ Add Project</button>
+          </div>
         </div>
       )}
     </div>
