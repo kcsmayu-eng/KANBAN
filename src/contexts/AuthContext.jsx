@@ -25,13 +25,24 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function fetchProfile(userId) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    setProfile(data)
-    setLoading(false)
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      
+      if (error) {
+        console.error('Profile fetch error:', error)
+      } else {
+        console.log('Profile loaded:', data)
+        setProfile(data)
+      }
+    } catch (err) {
+      console.error('Profile fetch exception:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const isManager  = profile?.role === 'manager'

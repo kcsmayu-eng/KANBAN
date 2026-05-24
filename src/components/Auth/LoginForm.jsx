@@ -21,10 +21,16 @@ export default function LoginForm() {
 
         // Insert profile
         if (data.user) {
-          const { error: profileError } = await supabase
+          console.log('Creating profile for user:', data.user.id, 'with role:', role)
+          const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .insert({ id: data.user.id, full_name: fullName, role })
-          if (profileError) throw profileError
+          
+          if (profileError) {
+            console.error('Profile insert error:', profileError)
+            throw profileError
+          }
+          console.log('Profile created:', profileData)
         }
         toast.success('Account created! You can now log in.')
         setIsSignUp(false)
@@ -34,6 +40,7 @@ export default function LoginForm() {
         toast.success('Logged in!')
       }
     } catch (err) {
+      console.error('Auth error:', err)
       toast.error(err.message)
     } finally {
       setLoading(false)

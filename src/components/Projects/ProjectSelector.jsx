@@ -9,6 +9,8 @@ export default function ProjectSelector({ onSelect }) {
   const { isManager, profile } = useAuth()
   const [newName, setNewName] = useState('')
 
+  console.log('ProjectSelector - Profile:', profile, 'isManager:', isManager)
+
   async function createProject() {
     if (!newName.trim()) {
       toast.error('Project name is required')
