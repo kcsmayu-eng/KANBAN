@@ -60,22 +60,27 @@ export default function LoginForm() {
         }
 
         console.log('Creating profile for user:', userId, 'with role:', role)
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .insert({ id: userId, full_name: fullName, role })
+        
+        // Call edge function to create profile (uses service role, bypasses RLS)
+        const { data: profileData, error: profileError } = await supabase.functions.invoke(
+          'create-profile',
+          {
+            body: {
+              userId,
+              fullName: fullName || 'User',
+              role
+            }
+          }
+        )
+        
         if (profileError) {
-          console.error('Profile insert error:', profileError)
-          throw profileError
-        }
-        console.log('Profile created:', profileData)
-
-        if (profileError) {
-          console.error('Profile insert error:', profileError)
+          console.error('Profile creation via function error:', profileError)
           throw profileError
         }
         console.log('Profile created:', profileData)
 
         toast.success('Account created and logged in!')
+
         setIsSignUp(false)
         setEmail('')
         setPassword('')
