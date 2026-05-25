@@ -23,7 +23,7 @@ export default function LoginForm() {
           email: emailToUse, 
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`
+            emailRedirectTo: undefined  // Disable email confirmation
           }
         })
         if (error) throw error
@@ -41,11 +41,29 @@ export default function LoginForm() {
           }
           console.log('Profile created:', profileData)
         }
-        toast.success('Account created! You can now log in.')
-        setIsSignUp(false)
-        setEmail('')
-        setPassword('')
-        setFullName('')
+
+        // Auto-login after signup (no email confirmation needed)
+        const { error: loginError } = await supabase.auth.signInWithPassword({ 
+          email: emailToUse, 
+          password 
+        })
+        
+        if (loginError) {
+          console.error('Auto-login error:', loginError)
+          // If auto-login fails, still show success - user can login manually
+          toast.success('Account created! You can now log in.')
+          setIsSignUp(false)
+          setEmail('')
+          setPassword('')
+          setFullName('')
+        } else {
+          // Successfully logged in
+          toast.success('Account created and logged in!')
+          setIsSignUp(false)
+          setEmail('')
+          setPassword('')
+          setFullName('')
+        }
       } else {
         if (!email.trim()) {
           toast.error('Email is required for login')
