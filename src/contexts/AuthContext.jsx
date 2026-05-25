@@ -47,6 +47,11 @@ export function AuthProvider({ children }) {
 
   const isManager  = profile?.role === 'manager'
   const isEmployee = profile?.role === 'employee'
+  const roleLabel = profile?.role === 'manager'
+    ? 'Manager'
+    : profile?.role === 'employee'
+      ? 'Employee'
+      : ''
 
   // Debug: log role info when it changes
   useEffect(() => {
@@ -56,7 +61,7 @@ export function AuthProvider({ children }) {
   }, [profile, isManager])
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isManager, isEmployee }}>
+    <AuthContext.Provider value={{ user, profile, loading, isManager, isEmployee, roleLabel }}>
       {children}
     </AuthContext.Provider>
   )

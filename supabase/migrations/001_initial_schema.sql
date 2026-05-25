@@ -96,9 +96,12 @@ create policy "projects_select" on public.projects for select using (
   exists (select 1 from public.project_members pm where pm.project_id = id and pm.profile_id = auth.uid())
 );
 create policy "projects_insert" on public.projects for insert with check (
-  exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'manager')
+  exists (select 1 from public.profiles p where p.id = auth.uid() and p.role in ('manager','employee'))
 );
 create policy "projects_update" on public.projects for update using (manager_id = auth.uid());
+create policy "projects_delete" on public.projects for delete using (
+  exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'manager')
+);
 
 -- Project members
 create policy "pm_select" on public.project_members for select using (true);

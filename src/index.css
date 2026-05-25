@@ -163,6 +163,9 @@ textarea { resize: vertical; }
   margin-bottom: 24px;
 }
 
+.project-card-wrapper {
+  position: relative;
+}
 .project-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -176,8 +179,27 @@ textarea { resize: vertical; }
 }
 .project-card:hover { border-color: var(--primary); transform: translateY(-2px); }
 
+.project-delete-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+}
+.project-delete-btn:hover { color: var(--text); }
+
 .project-name { font-weight: 600; font-size: 15px; }
 .project-desc { color: var(--text-muted); font-size: 13px; }
+
+.project-note {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-top: 8px;
+}
 
 .manager-section {
   background: var(--surface);

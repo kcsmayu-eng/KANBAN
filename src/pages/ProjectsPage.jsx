@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabaseClient'
 import ProjectSelector from '@/components/Projects/ProjectSelector'
 
 export default function ProjectsPage() {
-  const { profile } = useAuth()
+  const { profile, roleLabel } = useAuth()
   const navigate = useNavigate()
 
   async function handleSignOut() {
@@ -18,7 +18,7 @@ export default function ProjectsPage() {
         <h1>📋 Kanban Board</h1>
         <div className="header-right">
           <span className="user-info">
-            {profile?.full_name} · <em>{profile?.role}</em>
+            Logged in as <strong>{profile?.full_name}</strong> ({roleLabel})
           </span>
           <button onClick={handleSignOut} className="signout-btn">Sign Out</button>
         </div>

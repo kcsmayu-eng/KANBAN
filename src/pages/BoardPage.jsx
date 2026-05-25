@@ -9,7 +9,7 @@ export default function BoardPage() {
   const { id } = useParams()
   const { state } = useLocation()
   const navigate = useNavigate()
-  const { profile, isManager } = useAuth()
+  const { profile, isManager, roleLabel } = useAuth()
 
   const [project, setProject] = useState(state?.project ?? null)
   const [showUpload, setShowUpload] = useState(false)
@@ -46,7 +46,7 @@ export default function BoardPage() {
             </button>
           )}
           <span className="user-info">
-            {profile?.full_name} · <em>{profile?.role}</em>
+            Logged in as <strong>{profile?.full_name}</strong> ({roleLabel})
           </span>
           <button onClick={handleSignOut} className="signout-btn">Sign Out</button>
         </div>

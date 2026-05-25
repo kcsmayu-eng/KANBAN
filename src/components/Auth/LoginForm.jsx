@@ -18,52 +18,68 @@ export default function LoginForm() {
       if (isSignUp) {
         // Email is optional for signup
         const emailToUse = email.trim() || `user_${Date.now()}@anonymous.local`
-        
-        const { data, error } = await supabase.auth.signUp({ 
-          email: emailToUse, 
-          password,
-          options: {
-            emailRedirectTo: undefined  // Disable email confirmation
-          }
+
+        const { data, error } = await supabase.auth.signUp({
+          email: emailToUse,
+          password
         })
         if (error) throw error
 
-        // Insert profile - this should work now with the fixed RLS policy
-        if (data.user) {
-          console.log('Creating profile for user:', data.user.id, 'with role:', role)
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .insert({ id: data.user.id, full_name: fullName, role })
-          
-          if (profileError) {
-            console.error('Profile insert error:', profileError)
-            throw profileError
+        let userId = data.user?.id
+        let session = data.session
+        console.log('Signup response:', { userId, hasSession: !!session, signupData: data })
+
+        // If signup did not automatically create a session, sign the user in now
+        if (!session) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: emailToUse,
+            password
+          })
+          if (signInError) {
+            console.error('Sign-in after signup failed:', signInError)
+            throw signInError
           }
-          console.log('Profile created:', profileData)
+          userId = signInData.user?.id
+          session = signInData.session
         }
 
-        // Auto-login after signup (no email confirmation needed)
-        const { error: loginError } = await supabase.auth.signInWithPassword({ 
-          email: emailToUse, 
-          password 
-        })
-        
-        if (loginError) {
-          console.error('Auto-login error:', loginError)
-          // If auto-login fails, still show success - user can login manually
-          toast.success('Account created! You can now log in.')
-          setIsSignUp(false)
-          setEmail('')
-          setPassword('')
-          setFullName('')
-        } else {
-          // Successfully logged in
-          toast.success('Account created and logged in!')
-          setIsSignUp(false)
-          setEmail('')
-          setPassword('')
-          setFullName('')
+        if (!session) {
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+          if (sessionError) {
+            console.error('Session fetch after signup failed:', sessionError)
+            throw sessionError
+          }
+          if (sessionData?.session) {
+            session = sessionData.session
+            userId = session.user?.id || userId
+          }
         }
+
+        if (!userId) {
+          throw new Error('Unable to determine new user ID after signup.')
+        }
+
+        console.log('Creating profile for user:', userId, 'with role:', role)
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .insert({ id: userId, full_name: fullName, role })
+        if (profileError) {
+          console.error('Profile insert error:', profileError)
+          throw profileError
+        }
+        console.log('Profile created:', profileData)
+
+        if (profileError) {
+          console.error('Profile insert error:', profileError)
+          throw profileError
+        }
+        console.log('Profile created:', profileData)
+
+        toast.success('Account created and logged in!')
+        setIsSignUp(false)
+        setEmail('')
+        setPassword('')
+        setFullName('')
       } else {
         if (!email.trim()) {
           toast.error('Email is required for login')
