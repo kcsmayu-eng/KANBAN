@@ -61,23 +61,57 @@ export default function LoginForm() {
 
         console.log('Creating profile for user:', userId, 'with role:', role)
         
-        // Call edge function to create profile (uses service role, bypasses RLS)
-        const { data: profileData, error: profileError } = await supabase.functions.invoke(
-          'create-profile',
-          {
-            body: {
-              userId,
-              fullName: fullName || 'User',
-              role
-            }
-          }
-        )
+        // Get JWT token for authenticated request
+        const { data: { session: userSession }, error: sessionError } = await supabase.auth.getSession()
+        const accessToken = userSession?.access_token
         
-        if (profileError) {
-          console.error('Profile creation via function error:', profileError)
-          throw profileError
+        console.log('Access token available:', !!accessToken, 'Session error:', sessionError)
+        
+        if (!accessToken) {
+          console.warn('No access token after signup, attempting direct insert...')
         }
-        console.log('Profile created:', profileData)
+        
+        try {
+          // Call edge function to create profile (uses service role, bypasses RLS)
+          const { data: profileData, error: profileError } = await supabase.functions.invoke(
+            'create-profile',
+            {
+              body: {
+                userId,
+                fullName: fullName || 'User',
+                role
+              },
+              headers: accessToken ? {
+                'Authorization': `Bearer ${accessToken}`
+              } : {}
+            }
+          )
+          
+          if (profileError) {
+            console.error('Profile creation via function error:', profileError)
+            console.log('Function error details:', JSON.stringify(profileError, null, 2))
+            throw profileError
+          }
+          console.log('Profile created via function:', profileData)
+        } catch (funcError) {
+          console.error('Function invocation failed, attempting direct insert:', funcError)
+          
+          // Fallback: try direct insert if user is authenticated
+          if (userSession) {
+            console.log('Attempting direct insert with session...')
+            const { data: directData, error: directError } = await supabase
+              .from('profiles')
+              .insert({ id: userId, full_name: fullName || 'User', role })
+            
+            if (directError) {
+              console.error('Direct insert also failed:', directError)
+              throw directError
+            }
+            console.log('Profile created via direct insert:', directData)
+          } else {
+            throw funcError
+          }
+        }
 
         toast.success('Account created and logged in!')
 
