@@ -48,6 +48,13 @@ export function AuthProvider({ children }) {
   const isManager  = profile?.role === 'manager'
   const isEmployee = profile?.role === 'employee'
 
+  // Debug: log role info when it changes
+  useEffect(() => {
+    if (profile) {
+      console.log('✅ AuthContext updated - Role:', profile.role, 'isManager:', isManager)
+    }
+  }, [profile, isManager])
+
   return (
     <AuthContext.Provider value={{ user, profile, loading, isManager, isEmployee }}>
       {children}

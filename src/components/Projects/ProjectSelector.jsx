@@ -6,10 +6,13 @@ import toast from 'react-hot-toast'
 
 export default function ProjectSelector({ onSelect }) {
   const { projects, loading, refresh } = useProjects()
-  const { isManager, profile } = useAuth()
+  const { isManager, profile, loading: authLoading } = useAuth()
   const [newName, setNewName] = useState('')
 
-  console.log('ProjectSelector - Profile:', profile, 'isManager:', isManager)
+  console.log('ProjectSelector - Profile:', profile, 'isManager:', isManager, 'authLoading:', authLoading)
+
+  // Wait for BOTH auth and projects to load
+  const isLoading = loading || authLoading
 
   async function createProject() {
     if (!newName.trim()) {
@@ -29,7 +32,7 @@ export default function ProjectSelector({ onSelect }) {
     }
   }
 
-  if (loading) return <p className="loading-text">Loading projects…</p>
+  if (isLoading) return <p className="loading-text">Loading projects…</p>
 
   return (
     <div className="project-selector">
